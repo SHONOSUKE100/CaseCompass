@@ -1,0 +1,16 @@
+python==3.11
+numpy==1.26.4 
+pandas==2.2.1
+transformers==4.39.3
+padic==1.0.0
+mecab-python3==1.0.8
+torch==2.2.2
+streamlit==1.33.0
+gensim==4.3.2
+scipy==1.10.0
+google-generativeai
+fugashi==1.3.1
+python-dotenv==1.0.1
+scikit_learn==1.4.1
+unidic-lite==1.0.8
+pysqlite3==0.5.2
