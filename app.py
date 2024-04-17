@@ -142,7 +142,15 @@ def display_results(clean_dataset, results):
         with st.session_state['placeholders'][id].container():
             case = clean_dataset[id]
             st.subheader(case["case_name"])
-            st.write(f"**概要**: {case['gist']}")
+            if 'gist' in case:
+                st.write(f"**概要**: {case['gist']}")
+            if 'date' in case:
+                date = case['date']
+                year = date["year"]
+                month = date["month"]
+                day = date["day"]
+                
+                st.write(f"**裁判日**: {year}年{month}月{day}日") 
             st.write(f"**裁判所ウェブサイト**: [こちらから]({case['detail_page_link']})")
             if st.button("要約を生成", key=f"generate_summary_{id}"):
                 existing_summary = get_summary(id)
@@ -158,6 +166,7 @@ def display_results(clean_dataset, results):
                 st.warning("以下の要約はAIによって生成されたものです。AIは間違いを犯す可能性があります。必ず、上記のリンクから裁判所の裁判例集を確認してください\n また、本サービスが提供する情報について一切責任を負いません。 \nまた、生成された文章は法的な意見を提供するものではありません。具体的な紛争については弁護士などにご相談されることをお勧めいたします。", icon="⚠️")
                 st.markdown(st.session_state['generated_text'][id]["Text"], unsafe_allow_html=True)
             st.markdown("---")
+
 
 # Search functions
 def search_with_bow_unigram(query, clean_dataset):
@@ -187,6 +196,13 @@ def search_with_bert(query, clean_dataset):
     neighbors, distances = index.query(doc_vector_array, k=5)
     display_results(clean_dataset, [list(clean_dataset.keys())[n] for n in neighbors])
 
+def search_with_bow_unigram_for_all_documents(query, all_dataset):
+        """Performs search using TF-IDF vectorizer."""
+        vectorizer = joblib.load("model/tfidf_for_document_dataset_mindf_0.001_size_8791.joblib")
+        query_vector = vectorizer.transform([MeCab.Tagger("-Owakati").parse(query)])
+        index = Index.load("model/tf_idf_index_for_doc_mindf_0.001_size_8791.voy")
+        neighbors, _ = index.query(query_vector.toarray().astype(np.float32), k=5)
+        display_results(all_dataset, [list(all_dataset.keys())[n] for n in neighbors[0]])
 
 # Main function to run the app
 def main():
@@ -194,13 +210,15 @@ def main():
     st.markdown("このアプリでは、簡単にかつ柔軟に判例を検索することができます。")
 
     # Choose search engine
-    search_engine = st.radio('検索エンジンの種類を選択してください', ['TF-idf', "doc2vec", "BERT"], index=0)
+    search_engine = st.radio('検索エンジンの種類を選択してください', ['TF-idf', "doc2vec", "BERT", "tfidf_alldoc"], index=0)
     
     # Input search query
     query = st.text_area('検索したいワードを入力してください', '')
 
     # Load dataset
     clean_dataset = load_file('clean_list.json')
+
+    clean_dataset_all_documents = load_file('list_all.json')
 
     # Execute search
     if query:
@@ -210,6 +228,8 @@ def main():
             search_with_doc2vec(query, clean_dataset)
         elif search_engine == 'BERT':
             search_with_bert(query, clean_dataset)
+        elif search_engine == 'tfidf_alldoc':
+            search_with_bow_unigram_for_all_documents(query, clean_dataset_all_documents)
 
 if __name__ == "__main__":
     main()
