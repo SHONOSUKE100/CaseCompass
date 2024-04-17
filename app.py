@@ -196,13 +196,13 @@ def search_with_bert(query, clean_dataset):
     neighbors, distances = index.query(doc_vector_array, k=5)
     display_results(clean_dataset, [list(clean_dataset.keys())[n] for n in neighbors])
 
-def search_with_bow_unigram_for_all_documents(query, all_dataset):
-        """Performs search using TF-IDF vectorizer."""
-        vectorizer = joblib.load("model/tfidf_for_document_dataset_mindf_0.001_size_8791.joblib")
-        query_vector = vectorizer.transform([MeCab.Tagger("-Owakati").parse(query)])
-        index = Index.load("model/tf_idf_index_for_doc_mindf_0.001_size_8791.voy")
-        neighbors, _ = index.query(query_vector.toarray().astype(np.float32), k=5)
-        display_results(all_dataset, [list(all_dataset.keys())[n] for n in neighbors[0]])
+# def search_with_bow_unigram_for_all_documents(query, all_dataset):
+#         """Performs search using TF-IDF vectorizer."""
+#         vectorizer = joblib.load("model/tfidf_for_document_dataset_mindf_0.001_size_8791.joblib")
+#         query_vector = vectorizer.transform([MeCab.Tagger("-Owakati").parse(query)])
+#         index = Index.load("model/tf_idf_index_for_doc_mindf_0.001_size_8791.voy")
+#         neighbors, _ = index.query(query_vector.toarray().astype(np.float32), k=5)
+#         display_results(all_dataset, [list(all_dataset.keys())[n] for n in neighbors[0]])
 
 # Main function to run the app
 def main():
@@ -210,7 +210,7 @@ def main():
     st.markdown("このアプリでは、簡単にかつ柔軟に判例を検索することができます。")
 
     # Choose search engine
-    search_engine = st.radio('検索エンジンの種類を選択してください', ['TF-idf', "doc2vec", "BERT", "tfidf_alldoc"], index=0)
+    search_engine = st.radio('検索エンジンの種類を選択してください', ['TF-idf', "doc2vec", "BERT"], index=0)
     
     # Input search query
     query = st.text_area('検索したいワードを入力してください', '')
@@ -218,7 +218,7 @@ def main():
     # Load dataset
     clean_dataset = load_file('clean_list.json')
 
-    clean_dataset_all_documents = load_file('list_all.json')
+    # clean_dataset_all_documents = load_file('list_all.json')
 
     # Execute search
     if query:
@@ -228,8 +228,8 @@ def main():
             search_with_doc2vec(query, clean_dataset)
         elif search_engine == 'BERT':
             search_with_bert(query, clean_dataset)
-        elif search_engine == 'tfidf_alldoc':
-            search_with_bow_unigram_for_all_documents(query, clean_dataset_all_documents)
+        # elif search_engine == 'tfidf_alldoc':
+        #     search_with_bow_unigram_for_all_documents(query, clean_dataset_all_documents)
 
 if __name__ == "__main__":
     main()
