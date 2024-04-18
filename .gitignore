@@ -1,3 +1,5 @@
 .env
 .db
 excluded_from_app/
+secrets.toml
+

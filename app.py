@@ -64,8 +64,8 @@ def get_summary(case_id):
 
 
 # GeminiAPI設定
-GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
-
+# GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 
 st.set_page_config(page_title="判例検索エンジン", layout="wide")
 
