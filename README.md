@@ -1,6 +1,3 @@
-Creating a README for a complex project like the one you've described involves breaking down the elements and explaining the purpose, setup, and usage of the application in a clear and structured manner. Given the code you've shared, here’s a draft of a README that could guide users through your application.
-
----
 
 # Case Compass: A Legal Precedent Search Engine
 
