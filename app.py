@@ -22,9 +22,10 @@ import sqlite3
 load_dotenv()
 
 #データベース設定
-dbname = 'case_compass'
-conn = st.connection(dbname, type='sql')
-cur = conn.session
+dbname = 'case_compass.db'
+conn = sqlite3.connect(dbname)
+
+cur = conn.cursor()
 
 # テーブル作成
 
@@ -41,10 +42,9 @@ conn.commit()
 conn.close()
 
 def insert_summary(case_id, summary_text):
-    dbname = 'case_compass'
-    conn = st.connection(dbname, type='sql')
-    cur = conn.session
-    cur.execute('''
+    conn = sqlite3.connect('case_compass.db')
+    cursor = conn.cursor()
+    cursor.execute('''
     INSERT INTO summaries (case_id, summary_text) VALUES (?, ?)
     ''', (case_id, summary_text))
     conn.commit()
