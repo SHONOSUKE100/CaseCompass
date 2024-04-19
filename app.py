@@ -17,7 +17,7 @@ from IPython.display import Markdown
 from dotenv import load_dotenv
 import os
 import sqlite3
-
+import time
 # Load environment variables
 load_dotenv()
 
@@ -158,12 +158,13 @@ def display_results(clean_dataset, results):
                 if existing_summary:
                     generated_text = existing_summary
                 else:
+                    time.sleep(1)
                     generated_text = generate_response(id)
                     insert_summary(id, generated_text)
 
                 st.session_state['generated_text'][id]["Text"] =generated_text
             if st.session_state['generated_text'][id]["Bool"]:
-                st.warning("以下の要約はAIによって生成されたものです。AIは間違いを犯す可能性があります。必ず、上記のリンクから裁判所の裁判例集を確認してください\n また、本サービスが提供する情報について一切責任を負いません。 \nまた、生成された文章は法的な意見を提供するものではありません。具体的な紛争については弁護士などにご相談されることをお勧めいたします。", icon="⚠️")
+                st.warning("以下の要約はAIによって生成されたものです。AIは間違いを犯す可能性があります。必ず、上記のリンクから裁判所の裁判例集を確認してください。\n また、本サービスが提供する情報について一切責任を負いません。 \nまた、生成された文章は法的な意見を提供するものではありません。", icon="⚠️")
                 st.markdown(st.session_state['generated_text'][id]["Text"], unsafe_allow_html=True)
             st.markdown("---")
 
@@ -180,7 +181,7 @@ def search_with_bow_unigram(query, clean_dataset):
 def search_with_doc2vec(query, clean_dataset):
     """Performs search using Doc2Vec model."""
     model = doc2vec.Doc2Vec.load("model/doc2vec.model")
-    similar_docs = model.docvecs.most_similar(positive=[model.infer_vector(query.split())], topn=5)
+    similar_docs = model.dv.most_similar(positive=[model.infer_vector(query.split())], topn=5)
     display_results(clean_dataset, [list(clean_dataset.keys())[s[0]] for s in similar_docs])
 
 def search_with_bert(query, clean_dataset):
@@ -223,11 +224,17 @@ def main():
     # Execute search
     if query:
         if search_engine == 'TF-idf':
+            st.info("TF-idfで検索中です...")
             search_with_bow_unigram(query, clean_dataset)
         elif search_engine == 'doc2vec':
+            st.info("Doc2Vecで検索中です...")
             search_with_doc2vec(query, clean_dataset)
         elif search_engine == 'BERT':
+            st.info("BERTで検索中です...")
             search_with_bert(query, clean_dataset)
+        else:
+            st.error("選択された検索エンジンが無効です。")
+
         # elif search_engine == 'tfidf_alldoc':
         #     search_with_bow_unigram_for_all_documents(query, clean_dataset_all_documents)
 
