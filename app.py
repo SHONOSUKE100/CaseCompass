@@ -18,7 +18,10 @@ from dotenv import load_dotenv
 import os
 import sqlite3
 import time
-import streamlit.components.v1 as components
+from bs4 import BeautifulSoup
+import pathlib
+import shutil
+
 # Load environment variables
 load_dotenv()
 
@@ -213,6 +216,7 @@ def main():
     st.title('判例検索エンジン')
 
     ga_tracking_id = st.secrets["google_analytics"]["tracking_id"]
+    GA_ID = "google_analytics"
     html_content = f"""
     <html>
     <head>
@@ -228,8 +232,21 @@ def main():
     <body></body>
     </html>
     """
+    def inject_ga():
+        index_path = pathlib.Path(st.__file__).parent / "static" / "index.html"
+        soup = BeautifulSoup(index_path.read_text(), features="html.parser")
+        if not soup.find(id=GA_ID): 
+            bck_index = index_path.with_suffix('.bck')
+            if bck_index.exists():
+                shutil.copy(bck_index, index_path)  
+            else:
+                shutil.copy(index_path, bck_index)  
+            html = str(soup)
+            new_html = html.replace('<head>', '<head>\n' + html_content)
+            index_path.write_text(new_html)
 
-    st.components.v1.html(html_content, height=0)
+    inject_ga()
+    
     st.markdown("このアプリでは、簡単にかつ柔軟に判例を検索することができます。")
 
     # Choose search engine
