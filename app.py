@@ -18,8 +18,11 @@ from dotenv import load_dotenv
 import os
 import sqlite3
 import time
+import streamlit.components.v1 as components
 # Load environment variables
 load_dotenv()
+
+
 
 #データベース設定
 dbname = 'case_compass.db'
@@ -208,6 +211,25 @@ def search_with_bert(query, clean_dataset):
 # Main function to run the app
 def main():
     st.title('判例検索エンジン')
+
+    ga_tracking_id = st.secrets["google_analytics"]["tracking_id"]
+    html_content = f"""
+    <html>
+    <head>
+        <!-- Google Analytics tracking code -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id={ga_tracking_id}"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){{dataLayer.push(arguments);}}
+        gtag('js', new Date());
+        gtag('config', '{ga_tracking_id}');
+        </script>
+    </head>
+    <body></body>
+    </html>
+    """
+
+    st.components.v1.html(html_content, height=0)
     st.markdown("このアプリでは、簡単にかつ柔軟に判例を検索することができます。")
 
     # Choose search engine
