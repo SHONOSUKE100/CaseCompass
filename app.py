@@ -19,7 +19,6 @@ import os
 import sqlite3
 import time
 
-
 # Load environment variables
 load_dotenv()
 
@@ -125,7 +124,6 @@ def generate_response(case_name):
 
     return response_text
 
-
 def display_results(clean_dataset, results):
     """Displays search results in the Streamlit app."""
     st.header('検索結果')
@@ -157,16 +155,16 @@ def display_results(clean_dataset, results):
                 st.write(f"**裁判日**: {year}年{month}月{day}日") 
             st.write(f"**裁判所ウェブサイト**: [こちらから]({case['detail_page_link']})")
             if st.button("要約を生成", key=f"generate_summary_{id}"):
-                existing_summary = get_summary(id)
-                st.session_state['generated_text'][id]["Bool"] = True
-                if existing_summary:
-                    generated_text = existing_summary
-                else:
-                    time.sleep(1)
-                    generated_text = generate_response(id)
-                    insert_summary(id, generated_text)
-
-                st.session_state['generated_text'][id]["Text"] =generated_text
+                with st.spinner('要約を生成しています...'):
+                    existing_summary = get_summary(id)
+                    st.session_state['generated_text'][id]["Bool"] = True
+                    if existing_summary:
+                        generated_text = existing_summary
+                    else:
+                        time.sleep(1)
+                        generated_text = generate_response(id)
+                        insert_summary(id, generated_text)
+                    st.session_state['generated_text'][id]["Text"] =generated_text
             if st.session_state['generated_text'][id]["Bool"]:
                 st.warning("以下の要約はAIによって生成されたものです。AIは間違いを犯す可能性があります。必ず、上記のリンクから裁判所の裁判例集を確認してください。\n また、本サービスが提供する情報について一切責任を負いません。 \nまた、生成された文章は法的な意見を提供するものではありません。", icon="⚠️")
                 st.markdown(st.session_state['generated_text'][id]["Text"], unsafe_allow_html=True)
@@ -213,13 +211,17 @@ def search_with_bert(query, clean_dataset):
 def main():
     st.title('判例検索エンジン')
     
-    st.markdown("このアプリでは、簡単にかつ柔軟に判例を検索することができます。")
+    st.text("このアプリでは、簡単にかつ柔軟に判例を検索することができます。")
 
     # Choose search engine
-    search_engine = st.radio('検索エンジンの種類を選択してください', ['TF-idf', "doc2vec", "BERT"], index=0)
+    search_engine = st.radio('検索エンジンの種類を選択してください', ['単語で検索する（Tfidf）', "文章のベクトルで検索する（doc2vec）", "文脈を考慮して検索する（BERT)"], index=0)
     
     # Input search query
-    query = st.text_area('検索したいワードを入力してください', '')
+    with st.form(key='search_form'):
+        query = st.text_area('検索したいワードを入力してください', placeholder='例: 再審請求で無罪になった事例')
+        submit_button = st.form_submit_button(label='検索')
+        if submit_button:
+            st.session_state.query = query
 
     # Load dataset
     clean_dataset = load_file('clean_list.json')
@@ -228,13 +230,13 @@ def main():
 
     # Execute search
     if query:
-        if search_engine == 'TF-idf':
+        if search_engine == '単語で検索する（Tfidf）':
             st.info("TF-idfで検索中です...")
             search_with_bow_unigram(query, clean_dataset)
-        elif search_engine == 'doc2vec':
+        elif search_engine == '文章のベクトルで検索する（doc2vec）':
             st.info("Doc2Vecで検索中です...")
             search_with_doc2vec(query, clean_dataset)
-        elif search_engine == 'BERT':
+        elif search_engine == '文脈を考慮して検索する（BERT)':
             st.info("BERTで検索中です...")
             search_with_bert(query, clean_dataset)
         else:
