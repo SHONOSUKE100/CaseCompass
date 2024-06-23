@@ -66,26 +66,26 @@ def get_summary(case_id):
     return None
 
 
-# GeminiAPI設定
-# GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+# # GeminiAPI設定
+# # GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+# GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 
-st.set_page_config(page_title="判例検索エンジン", layout="wide")
+# st.set_page_config(page_title="判例検索エンジン", layout="wide")
 
-# Setup for generative AI model
-genai.configure(api_key=GOOGLE_API_KEY)
-generation_config = {
-    "temperature": 0.5,
-    "top_p": 1,
-    "top_k": 1,
-    "max_output_tokens": 800,
-}
-safety_settings = [
-    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-]
+# # Setup for generative AI model
+# genai.configure(api_key=GOOGLE_API_KEY)
+# generation_config = {
+#     "temperature": 0.5,
+#     "top_p": 1,
+#     "top_k": 1,
+#     "max_output_tokens": 800,
+# }
+# safety_settings = [
+#     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+#     {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+#     {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+#     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+# ] 
 
 # Helper functions
 def load_file(file_path):
@@ -101,28 +101,28 @@ def to_markdown(text):
     text = text.replace('•', '  *')
     return textwrap.indent(text, '> ', predicate=lambda _: True)
 
-def generate_response(case_name):
-    """Generates a legal analysis response using the Google Generative AI model."""
-    txt_file_path = f"precedents/text_files/{case_name}.txt"
-    document = load_file(txt_file_path)
+# def generate_response(case_name):
+    
+#     txt_file_path = f"precedents/text_files/{case_name}.txt"
+#     document = load_file(txt_file_path)
 
-    model = genai.GenerativeModel(model_name="gemini-1.0-pro",
-                                  generation_config=generation_config,
-                                  safety_settings=safety_settings)
-    prompt = [
-    f"判例内容:{document}\n\nこの判例における主要な法律的論点を明らかにし、なぜこの論点が重要であるかを説明してください。",
-    ]
+#     model = genai.GenerativeModel(model_name="gemini-1.0-pro",
+#                                   generation_config=generation_config,
+#                                   safety_settings=safety_settings)
+#     prompt = [
+#     f"判例内容:{document}\n\nこの判例における主要な法律的論点を明らかにし、なぜこの論点が重要であるかを説明してください。",
+#     ]
     
-    # Make the API call to generate content
-    response = model.generate_content(prompt, stream=True)
+#     # Make the API call to generate content
+#     response = model.generate_content(prompt, stream=True)
     
-    # Ensure the response completes iteration by calling resolve()
-    response.resolve()  # This waits for all data to be fetched
+#     # Ensure the response completes iteration by calling resolve()
+#     response.resolve()  # This waits for all data to be fetched
     
-    # Convert the response to Markdown and then display it in Streamlit
-    response_text = to_markdown(response.text)
+#     # Convert the response to Markdown and then display it in Streamlit
+#     response_text = to_markdown(response.text)
 
-    return response_text
+#     return response_text 
 
 def display_results(clean_dataset, results):
     """Displays search results in the Streamlit app."""
@@ -154,20 +154,20 @@ def display_results(clean_dataset, results):
                 
                 st.write(f"**裁判日**: {year}年{month}月{day}日") 
             st.write(f"**裁判所ウェブサイト**: [こちらから]({case['detail_page_link']})")
-            if st.button("要約を生成", key=f"generate_summary_{id}"):
-                with st.spinner('要約を生成しています...'):
-                    existing_summary = get_summary(id)
-                    st.session_state['generated_text'][id]["Bool"] = True
-                    if existing_summary:
-                        generated_text = existing_summary
-                    else:
-                        time.sleep(1)
-                        generated_text = generate_response(id)
-                        insert_summary(id, generated_text)
-                    st.session_state['generated_text'][id]["Text"] =generated_text
-            if st.session_state['generated_text'][id]["Bool"]:
-                st.warning("以下の要約はAIによって生成されたものです。AIは間違いを犯す可能性があります。必ず、上記のリンクから裁判所の裁判例集を確認してください。\n また、本サービスが提供する情報について一切責任を負いません。 \nまた、生成された文章は法的な意見を提供するものではありません。", icon="⚠️")
-                st.markdown(st.session_state['generated_text'][id]["Text"], unsafe_allow_html=True)
+            # if st.button("要約を生成", key=f"generate_summary_{id}"):
+            #     with st.spinner('要約を生成しています...'):
+            #         existing_summary = get_summary(id)
+            #         st.session_state['generated_text'][id]["Bool"] = True
+            #         if existing_summary:
+            #             generated_text = existing_summary
+            #         else:
+            #             time.sleep(1)
+            #             generated_text = generate_response(id)
+            #             insert_summary(id, generated_text)
+            #         st.session_state['generated_text'][id]["Text"] =generated_text
+            # if st.session_state['generated_text'][id]["Bool"]:
+            #     st.warning("以下の要約はAIによって生成されたものです。AIは間違いを犯す可能性があります。必ず、上記のリンクから裁判所の裁判例集を確認してください。\n また、本サービスが提供する情報について一切責任を負いません。 \nまた、生成された文章は法的な意見を提供するものではありません。", icon="⚠️")
+            #     st.markdown(st.session_state['generated_text'][id]["Text"], unsafe_allow_html=True) 
             st.markdown("---")
 
 
